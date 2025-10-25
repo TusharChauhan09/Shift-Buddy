@@ -17,8 +17,11 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Shift Buddy - Your Mutual Shift Guide",
+  title: "Shift-Buddy",
   description: "Your mutual shift guide for hostel room swaps and exchanges",
+  icons: {
+    icon: "/shift.png",
+  },
 };
 
 export default function RootLayout({

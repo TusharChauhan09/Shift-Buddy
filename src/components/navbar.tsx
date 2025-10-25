@@ -1,5 +1,6 @@
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import Link from "next/link";
+import Image from "next/image";
 
 interface NavbarProps {
   userName?: string | null;
@@ -23,14 +24,23 @@ export function Navbar({
       <div className="px-3 sm:px-4 md:px-5 lg:px-6">
         <div className="flex justify-between items-center h-14 sm:h-16">
           <div className="flex-shrink-0">
-            <div className="flex flex-col">
-              <h1 className="text-base sm:text-lg md:text-xl font-semibold leading-tight">
-                <span className="hidden sm:inline">Shift Buddy</span>
-                <span className="sm:hidden">Shift Buddy</span>
-              </h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
-                your mutual shift guide
-              </p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Image
+                src="/shift.png"
+                alt="Shift Buddy Logo"
+                width={32}
+                height={32}
+                className="w-7 h-7 sm:w-8 sm:h-8"
+              />
+              <div className="flex flex-col">
+                <h1 className="text-base sm:text-lg md:text-xl font-semibold leading-tight">
+                  <span className="hidden sm:inline">Shift Buddy</span>
+                  <span className="sm:hidden">Shift Buddy</span>
+                </h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
+                  your mutual shift guide
+                </p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
