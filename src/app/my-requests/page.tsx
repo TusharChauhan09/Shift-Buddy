@@ -93,7 +93,7 @@ export default async function MyRequestsPage() {
           <div className="flex justify-between items-center h-14 sm:h-16">
             <Link
               href="/"
-              className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-foreground hover:text-primary transition-colors cursor-pointer"
             >
               <svg
                 className="w-5 h-5"

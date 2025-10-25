@@ -154,7 +154,7 @@ export function RequestModal({
           <h2 className="text-2xl font-semibold">Post a New Request</h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <svg
@@ -185,7 +185,7 @@ export function RequestModal({
                   <button
                     type="button"
                     onClick={() => router.push("/profile/setup")}
-                    className="text-xs underline hover:no-underline"
+                    className="text-xs underline hover:no-underline cursor-pointer"
                   >
                     Go to Profile Setup →
                   </button>
@@ -196,7 +196,7 @@ export function RequestModal({
                   <button
                     type="button"
                     onClick={() => router.push("/my-requests")}
-                    className="text-xs underline hover:no-underline"
+                    className="text-xs underline hover:no-underline cursor-pointer"
                   >
                     Go to My Requests →
                   </button>

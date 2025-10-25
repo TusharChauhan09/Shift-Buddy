@@ -142,7 +142,7 @@ export function EditRequestModal({
           <h2 className="text-2xl font-semibold">Edit Request</h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <svg

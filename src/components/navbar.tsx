@@ -32,7 +32,7 @@ export function Navbar({
             {isAdmin && (
               <Link
                 href="/dashboard"
-                className="text-xs sm:text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors px-3 sm:px-4 py-2 rounded-md shadow-sm"
+                className="text-xs sm:text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors px-3 sm:px-4 py-2 rounded-md shadow-sm cursor-pointer"
               >
                 Dashboard
               </Link>

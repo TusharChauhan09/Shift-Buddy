@@ -55,7 +55,7 @@ export function MyRequestCard({ item }: MyRequestCardProps) {
             </span>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="text-xs text-primary hover:underline flex items-center gap-1"
+              className="text-xs text-primary hover:underline flex items-center gap-1 cursor-pointer"
             >
               <svg
                 className="w-3 h-3"

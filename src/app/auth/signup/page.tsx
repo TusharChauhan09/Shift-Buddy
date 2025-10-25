@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { OAuthDebug } from "@/components/oauth-debug";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
 export default function SignUpPage() {
@@ -25,7 +23,10 @@ export default function SignUpPage() {
     }
   }, []);
 
-  const [availableProviders, setAvailableProviders] = useState<Record<string, unknown> | null>(null);
+  const [availableProviders, setAvailableProviders] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   useEffect(() => {
     (async () => {
       try {
@@ -65,14 +66,11 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!signUpData.email.trim()) {
-      setError("Email is required");
-      setLoading(false);
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(signUpData.email.trim())) {
+    // Email is optional, but if provided, validate format
+    if (
+      signUpData.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signUpData.email.trim())
+    ) {
       setError("Please enter a valid email address");
       setLoading(false);
       return;
@@ -129,7 +127,9 @@ export default function SignUpPage() {
       // After successful signup, automatically sign the user in
       try {
         const signInResult = await signIn("credentials", {
-          registrationNumber: signUpData.registrationNumber.trim().toUpperCase(),
+          registrationNumber: signUpData.registrationNumber
+            .trim()
+            .toUpperCase(),
           password: signUpData.password,
           callbackUrl,
           redirect: false,
@@ -224,255 +224,382 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-green-600">Account Created Successfully!</CardTitle>
-          <CardDescription>
-            Your account has been created. You can now sign in with your credentials.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="w-full max-w-sm mx-auto bg-card rounded-xl shadow-lg border border-border p-6">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
+            <svg
+              className="w-6 h-6 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-foreground">
+            Account Created!
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Your account has been created successfully. You can now sign in.
+          </p>
           <Button
             onClick={() => {
               setSuccess(false);
               setIsSignUp(false);
             }}
-            className="w-full"
+            className="w-full mt-3"
           >
-            Sign In Now
+            Continue →
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-foreground">
-            {isSignUp ? "Create Your Account" : "Welcome Back"}
-          </CardTitle>
-          <CardDescription className="text-base mt-2">
-            {isSignUp
-              ? "Join the hostel management system to get started"
-              : "Sign in to access your dashboard"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* OAuth Providers */}
-          <div className="space-y-2 mb-6">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                try {
-                  if (!availableProviders || !("github" in availableProviders)) {
-                    setError("GitHub provider is not configured.");
-                    return;
-                  }
-                  await signIn("github", { callbackUrl, redirect: true });
-                } catch (error) {
-                  if (process.env.NODE_ENV === "development") {
-                    console.error("GitHub signin error:", error);
-                  }
-                  setError("GitHub signin failed. Please try again.");
-                }
-              }}
-              disabled={loading || !availableProviders || !("github" in availableProviders)}
-            >
-              Continue with GitHub
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={async () => {
-                try {
-                  if (!availableProviders || !("azure-ad" in availableProviders)) {
-                    setError("Microsoft provider is not configured.");
-                    return;
-                  }
-                  await signIn("azure-ad", { callbackUrl, redirect: true });
-                } catch (error) {
-                  if (process.env.NODE_ENV === "development") {
-                    console.error("Microsoft signin error:", error);
-                  }
-                  setError("Microsoft signin failed. Please try again.");
-                }
-              }}
-              disabled={loading || !availableProviders || !("azure-ad" in availableProviders)}
-            >
-              Continue with Microsoft
-            </Button>
-          </div>
-          
-          {/* Debug info for development */}
-          {process.env.NODE_ENV === "development" && (
-            <div className="mt-4">
-              <OAuthDebug />
-              <div className="mt-2 text-xs text-muted-foreground">
-                <a href="/test-oauth" className="underline">Test OAuth separately</a>
-              </div>
-            </div>
-          )}
+    <div className="w-full max-w-sm mx-auto bg-card rounded-xl shadow-lg border border-border overflow-hidden">
+      {/* Header with Icon */}
+      <div className="p-5 pb-4 text-center border-b border-border">
+        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+          <svg
+            className="w-6 h-6 text-primary"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+        </div>
+        <h1 className="text-lg font-bold text-foreground">
+          {isSignUp ? "Create your account" : "Sign in to Hostel System"}
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          {isSignUp
+            ? "Welcome! Please fill in the details to get started."
+            : "Welcome back! Please sign in to continue"}
+        </p>
+      </div>
 
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
+      {/* Content */}
+      <div className="p-5">
+        {/* OAuth Providers */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <Button
+            variant="outline"
+            className="w-full h-9 font-medium text-xs"
+            onClick={async () => {
+              try {
+                if (!availableProviders || !("github" in availableProviders)) {
+                  setError("GitHub provider is not configured.");
+                  return;
+                }
+                await signIn("github", { callbackUrl, redirect: true });
+              } catch (error) {
+                if (process.env.NODE_ENV === "development") {
+                  console.error("GitHub signin error:", error);
+                }
+                setError("GitHub signin failed. Please try again.");
+              }
+            }}
+            disabled={
+              loading ||
+              !availableProviders ||
+              !("github" in availableProviders)
+            }
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            <span className="ml-1.5 text-xs">GitHub</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-9 font-medium text-xs"
+            onClick={async () => {
+              try {
+                if (
+                  !availableProviders ||
+                  !("azure-ad" in availableProviders)
+                ) {
+                  setError("Microsoft provider is not configured.");
+                  return;
+                }
+                await signIn("azure-ad", { callbackUrl, redirect: true });
+              } catch (error) {
+                if (process.env.NODE_ENV === "development") {
+                  console.error("Microsoft signin error:", error);
+                }
+                setError("Microsoft signin failed. Please try again.");
+              }
+            }}
+            disabled={
+              loading ||
+              !availableProviders ||
+              !("azure-ad" in availableProviders)
+            }
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zm12.6 0H12.6V0H24v11.4z" />
+            </svg>
+            <span className="ml-1.5 text-xs hidden sm:inline">Microsoft</span>
+          </Button>
+        </div>
 
-          {/* Sign Up Form */}
-          {isSignUp ? (
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-3 text-muted-foreground font-medium">
+              or
+            </span>
+          </div>
+        </div>
+
+        {/* Sign Up Form */}
+        {isSignUp ? (
+          <form onSubmit={handleSignUp} className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs font-medium">
+                  First name{" "}
+                  <span className="text-muted-foreground font-normal text-[10px] ml-1">
+                    Optional
+                  </span>
+                </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder=""
+                  className="h-8 text-sm"
                   value={signUpData.name}
                   onChange={(e) =>
                     setSignUpData({ ...signUpData, name: e.target.value })
                   }
-                  required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div className="space-y-1">
+                <Label htmlFor="lastname" className="text-xs font-medium">
+                  Last name{" "}
+                  <span className="text-muted-foreground font-normal text-[10px] ml-1">
+                    Optional
+                  </span>
+                </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={signUpData.email}
-                  onChange={(e) =>
-                    setSignUpData({ ...signUpData, email: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="registration">Registration Number</Label>
-                <Input
-                  id="registration"
+                  id="lastname"
                   type="text"
-                  placeholder="e.g. 21XX1234"
-                  value={signUpData.registrationNumber}
-                  onChange={(e) =>
-                    setSignUpData({
-                      ...signUpData,
-                      registrationNumber: e.target.value,
-                    })
-                  }
-                  required
+                  placeholder=""
+                  className="h-8 text-sm"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={signUpData.password}
-                  onChange={(e) =>
-                    setSignUpData({ ...signUpData, password: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={signUpData.confirmPassword}
-                  onChange={(e) =>
-                    setSignUpData({
-                      ...signUpData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <LoadingSpinner className="w-4 h-4 mr-2" />
-                    Creating Account...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
-          ) : (
-            /* Sign In Form */
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signInRegistration">Registration Number</Label>
-                <Input
-                  id="signInRegistration"
-                  type="text"
-                  placeholder="Enter your registration number"
-                  value={signInData.registrationNumber}
-                  onChange={(e) =>
-                    setSignInData({
-                      ...signInData,
-                      registrationNumber: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signInPassword">Password</Label>
-                <Input
-                  id="signInPassword"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={signInData.password}
-                  onChange={(e) =>
-                    setSignInData({ ...signInData, password: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <LoadingSpinner className="w-4 h-4 mr-2" />
-                    Signing In...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </form>
-          )}
+            </div>
 
-          {/* Toggle between Sign Up and Sign In */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setError(null);
-                }}
-                className="text-blue-600 hover:underline font-medium"
+            <div className="space-y-1">
+              <Label htmlFor="registration" className="text-xs font-medium">
+                Registration Number
+              </Label>
+              <Input
+                id="registration"
+                type="text"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signUpData.registrationNumber}
+                onChange={(e) =>
+                  setSignUpData({
+                    ...signUpData,
+                    registrationNumber: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-xs font-medium">
+                Email{" "}
+                <span className="text-muted-foreground font-normal text-[10px] ml-1">
+                  Optional
+                </span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signUpData.email}
+                onChange={(e) =>
+                  setSignUpData({ ...signUpData, email: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="password" className="text-xs font-medium">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signUpData.password}
+                onChange={(e) =>
+                  setSignUpData({ ...signUpData, password: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="confirmPassword" className="text-xs font-medium">
+                Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signUpData.confirmPassword}
+                onChange={(e) =>
+                  setSignUpData({
+                    ...signUpData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2">
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-9 font-medium text-sm"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <LoadingSpinner className="w-3 h-3 mr-2" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  Continue <span className="ml-1">→</span>
+                </>
+              )}
+            </Button>
+          </form>
+        ) : (
+          /* Sign In Form */
+          <form onSubmit={handleSignIn} className="space-y-3">
+            <div className="space-y-1">
+              <Label
+                htmlFor="signInRegistration"
+                className="text-xs font-medium"
               >
-                {isSignUp ? "Sign In" : "Sign Up"}
-              </button>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+                Registration Number
+              </Label>
+              <Input
+                id="signInRegistration"
+                type="text"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signInData.registrationNumber}
+                onChange={(e) =>
+                  setSignInData({
+                    ...signInData,
+                    registrationNumber: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="signInPassword" className="text-xs font-medium">
+                Password
+              </Label>
+              <Input
+                id="signInPassword"
+                type="password"
+                placeholder=""
+                className="h-8 text-sm"
+                value={signInData.password}
+                onChange={(e) =>
+                  setSignInData({ ...signInData, password: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2">
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-9 font-medium text-sm"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <LoadingSpinner className="w-3 h-3 mr-2" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Continue <span className="ml-1">→</span>
+                </>
+              )}
+            </Button>
+          </form>
+        )}
+
+        {/* Toggle between Sign Up and Sign In */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError(null);
+              }}
+              className="text-primary hover:underline font-semibold cursor-pointer"
+            >
+              {isSignUp ? "Sign in" : "Sign up"}
+            </button>
+          </p>
+        </div>
+
+        {/* Secured by footer */}
+        <div className="mt-5 pt-4 border-t border-border text-center">
+          <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+            Secured by
+            <span className="font-semibold text-foreground">NextAuth</span>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

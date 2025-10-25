@@ -59,7 +59,7 @@ export function ProfileDropdown({
       {/* Profile Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
         aria-label="Profile menu"
       >
         {hasProfilePic ? (
@@ -109,7 +109,7 @@ export function ProfileDropdown({
           <div className="py-1">
             <Link
               href="/profile/setup?from=/"
-              className="block px-4 py-2 text-sm hover:bg-secondary transition-colors"
+              className="block px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function ProfileDropdown({
 
             <Link
               href="/my-requests"
-              className="block px-4 py-2 text-sm hover:bg-secondary transition-colors"
+              className="block px-4 py-2 text-sm hover:bg-secondary transition-colors cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center gap-2">

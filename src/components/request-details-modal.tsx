@@ -83,7 +83,7 @@ export function RequestDetailsModal({
           <h2 className="text-2xl font-semibold">Request Details</h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <svg
