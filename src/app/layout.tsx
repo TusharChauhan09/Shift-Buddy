@@ -21,6 +21,26 @@ export const metadata: Metadata = {
   description: "Your mutual shift guide for hostel room swaps and exchanges",
   icons: {
     icon: "/shift.png",
+    apple: "/shift.png",
+  },
+  openGraph: {
+    title: "Shift-Buddy",
+    description: "Your mutual shift guide for hostel room swaps and exchanges",
+    images: [
+      {
+        url: "/shift.png",
+        width: 1200,
+        height: 630,
+        alt: "Shift-Buddy Logo",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shift-Buddy",
+    description: "Your mutual shift guide for hostel room swaps and exchanges",
+    images: ["/shift.png"],
   },
 };
 
