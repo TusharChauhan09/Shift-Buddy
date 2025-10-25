@@ -7,17 +7,54 @@ interface RequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   needsProfileCompletion: boolean;
+  userName?: string | null;
 }
 
 export function RequestModal({
   isOpen,
   onClose,
   needsProfileCompletion,
+  userName,
 }: RequestModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentHostel, setCurrentHostel] = useState("");
+  const [desiredHostel, setDesiredHostel] = useState("");
+  const [hostelType, setHostelType] = useState<"BH" | "GH" | null>(null);
+  const [currentHostelNumber, setCurrentHostelNumber] = useState<string | null>(
+    null
+  );
+  const [desiredHostelNumber, setDesiredHostelNumber] = useState<string | null>(
+    null
+  );
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Update currentHostel when type and number are selected
+  useEffect(() => {
+    if (hostelType && currentHostelNumber) {
+      setCurrentHostel(`${hostelType}-${currentHostelNumber}`);
+    } else {
+      setCurrentHostel("");
+    }
+  }, [hostelType, currentHostelNumber]);
+
+  // Update desiredHostel when type and number are selected
+  useEffect(() => {
+    if (hostelType && desiredHostelNumber) {
+      setDesiredHostel(`${hostelType}-${desiredHostelNumber}`);
+    } else {
+      setDesiredHostel("");
+    }
+  }, [hostelType, desiredHostelNumber]);
+
+  // Generate default message based on hostels
+  const defaultMessage =
+    currentHostel && desiredHostel
+      ? `Hi! I am ${
+          userName || "a student"
+        } and I want to shift from ${currentHostel} to ${desiredHostel}. I am looking for someone who wants to shift from ${desiredHostel} to ${currentHostel}. Let's swap!`
+      : "";
 
   // Close modal on Escape key
   useEffect(() => {
@@ -69,13 +106,22 @@ export function RequestModal({
       const result = await response.json();
 
       if (!response.ok) {
-        // Check if error is about missing registration number
+        // Check if error is about missing profile fields
         if (
           response.status === 403 &&
-          result.error?.includes("Registration number required")
+          (result.error?.includes("registration number") ||
+            result.error?.includes("phone number"))
+        ) {
+          setError(result.error);
+          return;
+        }
+        // Check if error is about request limit
+        if (
+          response.status === 403 &&
+          result.error?.includes("2 active requests")
         ) {
           setError(
-            "Please complete your profile setup with your registration number before posting a request."
+            "You already have 2 active requests. Please delete one of your existing requests from 'My Requests' before creating a new one."
           );
           return;
         }
@@ -132,7 +178,9 @@ export function RequestModal({
           {error && (
             <div className="p-3 bg-destructive/10 border border-destructive rounded text-destructive text-sm">
               {error}
-              {error.includes("profile setup") && (
+              {(error.includes("profile") ||
+                error.includes("registration number") ||
+                error.includes("phone number")) && (
                 <div className="mt-2">
                   <button
                     type="button"
@@ -143,39 +191,163 @@ export function RequestModal({
                   </button>
                 </div>
               )}
+              {error.includes("2 active requests") && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/my-requests")}
+                    className="text-xs underline hover:no-underline"
+                  >
+                    Go to My Requests →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="currentHostel" className="text-sm font-medium">
-                Current Hostel <span className="text-destructive">*</span>
-              </label>
-              <input
-                id="currentHostel"
-                name="currentHostel"
-                type="text"
-                placeholder="e.g., North Campus"
-                required
+          {/* Hostel Type Selection - BH or GH */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Hostel Type <span className="text-destructive">*</span>
+            </label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={hostelType === "BH" ? "default" : "outline"}
+                onClick={() => {
+                  setHostelType(hostelType === "BH" ? null : "BH");
+                  setCurrentHostelNumber(null);
+                  setDesiredHostelNumber(null);
+                }}
                 disabled={needsProfileCompletion || loading}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="desiredHostel" className="text-sm font-medium">
-                Desired Hostel <span className="text-destructive">*</span>
-              </label>
-              <input
-                id="desiredHostel"
-                name="desiredHostel"
-                type="text"
-                placeholder="e.g., South Campus"
-                required
+                className="flex-1 h-10"
+              >
+                Boys Hostel (BH)
+              </Button>
+              <Button
+                type="button"
+                variant={hostelType === "GH" ? "default" : "outline"}
+                onClick={() => {
+                  setHostelType(hostelType === "GH" ? null : "GH");
+                  setCurrentHostelNumber(null);
+                  setDesiredHostelNumber(null);
+                }}
                 disabled={needsProfileCompletion || loading}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              />
+                className="flex-1 h-10"
+              >
+                Girls Hostel (GH)
+              </Button>
             </div>
           </div>
+
+          {/* Show hostel number selection only after type is selected */}
+          {hostelType && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Current Hostel Number */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Current Hostel <span className="text-destructive">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {[...Array(10)].map((_, i) => {
+                        const num = (i + 1).toString();
+                        return (
+                          <Button
+                            key={num}
+                            type="button"
+                            size="sm"
+                            variant={
+                              currentHostelNumber === num
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setCurrentHostelNumber(num)}
+                            disabled={needsProfileCompletion || loading}
+                            className="h-9 p-0"
+                          >
+                            {num}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Display selected hostel */}
+                    {currentHostel && (
+                      <div className="text-sm text-muted-foreground bg-secondary px-3 py-2 rounded-md">
+                        Selected:{" "}
+                        <span className="font-medium text-foreground">
+                          {currentHostel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Desired Hostel Number */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Desired Hostel <span className="text-destructive">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {[...Array(10)].map((_, i) => {
+                        const num = (i + 1).toString();
+                        return (
+                          <Button
+                            key={num}
+                            type="button"
+                            size="sm"
+                            variant={
+                              desiredHostelNumber === num
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setDesiredHostelNumber(num)}
+                            disabled={needsProfileCompletion || loading}
+                            className="h-9 p-0"
+                          >
+                            {num}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Display selected hostel */}
+                    {desiredHostel && (
+                      <div className="text-sm text-muted-foreground bg-secondary px-3 py-2 rounded-md">
+                        Selected:{" "}
+                        <span className="font-medium text-foreground">
+                          {desiredHostel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Hidden inputs to hold the values */}
+              <input
+                type="hidden"
+                name="currentHostel"
+                value={currentHostel}
+                required
+              />
+              <input
+                type="hidden"
+                name="desiredHostel"
+                value={desiredHostel}
+                required
+              />
+            </>
+          )}
+
+          {!hostelType && (
+            <div className="text-sm text-muted-foreground text-center py-4 bg-secondary/50 rounded-md">
+              Please select a hostel type (BH or GH) to continue
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -273,6 +445,7 @@ export function RequestModal({
               name="message"
               rows={4}
               placeholder="Add any additional details about your request..."
+              defaultValue={defaultMessage}
               disabled={needsProfileCompletion || loading}
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
             />

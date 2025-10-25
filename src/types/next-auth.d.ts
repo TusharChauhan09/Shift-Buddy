@@ -7,6 +7,8 @@ declare module "next-auth" {
       image?: string | null;
     };
     registrationNumber?: string | null;
+    phoneNumber?: string | null;
+    isAdmin?: boolean;
   }
 }
 
@@ -14,5 +16,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     registrationNumber?: string | null;
+    phoneNumber?: string | null;
+    isAdmin?: boolean;
   }
 }

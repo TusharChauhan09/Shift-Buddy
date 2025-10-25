@@ -11,7 +11,7 @@ import {
 import { getAuth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { RequestsCard } from "@/components/requests-card";
-import { RequestCardClient } from "@/components/request-card-client";
+import { FilteredRequests } from "@/components/filtered-requests";
 
 async function getRequests() {
   try {
@@ -44,21 +44,7 @@ async function RequestsSection() {
     (item: any) => item.userId !== session?.user?.id
   );
 
-  if (!otherUsersRequests.length) {
-    return (
-      <div className="text-center text-muted-foreground py-8">
-        <p>No requests from other students yet</p>
-        <p className="text-sm mt-2">Check back later for swap opportunities</p>
-      </div>
-    );
-  }
-  return (
-    <div className="space-y-3">
-      {otherUsersRequests.map((item: any) => (
-        <RequestCardClient key={item.id} item={item} />
-      ))}
-    </div>
-  );
+  return <FilteredRequests items={otherUsersRequests} />;
 }
 
 function CreateRequestForm({ disabled }: { disabled?: boolean }) {
@@ -119,20 +105,22 @@ export default async function Home() {
   }
   const auth = session as NonNullable<typeof session>;
 
-  const needsProfileCompletion = !auth.registrationNumber;
+  const needsProfileCompletion = !auth.registrationNumber || !auth.phoneNumber;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground pb-8">
       {/* Header */}
       <Navbar
         userName={auth.user?.name}
         userImage={auth.user?.image}
         userEmail={auth.user?.email}
         registrationNumber={auth.registrationNumber}
+        phoneNumber={auth.phoneNumber}
+        isAdmin={auth.isAdmin}
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
         {/* Profile Completion Alert */}
         {needsProfileCompletion && (
           <div className="mb-6 bg-secondary border border-border rounded-lg p-4">
@@ -170,7 +158,10 @@ export default async function Home() {
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Hostel Requests Quick Action */}
-          <RequestsCard needsProfileCompletion={needsProfileCompletion} />
+          <RequestsCard
+            needsProfileCompletion={needsProfileCompletion}
+            userName={auth.user?.name}
+          />
 
           {/* Quick Info Card */}
           <Card>

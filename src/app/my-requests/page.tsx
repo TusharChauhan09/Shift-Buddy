@@ -86,11 +86,11 @@ export default async function MyRequestsPage() {
   const needsProfileCompletion = !session.registrationNumber;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-8">
       {/* Header */}
-      <header className="bg-card text-card-foreground shadow-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-7xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
+        <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <Link
               href="/"
               className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
@@ -108,16 +108,21 @@ export default async function MyRequestsPage() {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              <span className="font-medium">Back to Home</span>
+              <span className="font-medium text-sm sm:text-base">
+                <span className="hidden sm:inline">Back to Home</span>
+                <span className="sm:hidden">Back</span>
+              </span>
             </Link>
-            <h1 className="text-xl font-semibold">My Requests</h1>
-            <div className="w-24"></div> {/* Spacer for alignment */}
+            <h1 className="text-base sm:text-lg md:text-xl font-semibold">
+              My Requests
+            </h1>
+            <div className="w-16 sm:w-24"></div> {/* Spacer for alignment */}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-4xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
         {needsProfileCompletion && (
           <div className="mb-6 bg-secondary border border-border rounded-lg p-4">
             <div className="flex items-center">

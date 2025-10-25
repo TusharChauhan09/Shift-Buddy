@@ -12,9 +12,13 @@ import { RequestModal } from "@/components/request-modal";
 
 interface RequestsCardProps {
   needsProfileCompletion: boolean;
+  userName?: string | null;
 }
 
-export function RequestsCard({ needsProfileCompletion }: RequestsCardProps) {
+export function RequestsCard({
+  needsProfileCompletion,
+  userName,
+}: RequestsCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -26,7 +30,7 @@ export function RequestsCard({ needsProfileCompletion }: RequestsCardProps) {
             Post or view requests in the section below
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-3 pt-2 px-6">
           <Button
             className="w-full"
             disabled={needsProfileCompletion}
@@ -37,7 +41,7 @@ export function RequestsCard({ needsProfileCompletion }: RequestsCardProps) {
             }}
           >
             {needsProfileCompletion
-              ? "Add Registration Number to Post"
+              ? "Complete Profile to Post"
               : "Post New Request"}
           </Button>
         </CardContent>
@@ -47,6 +51,7 @@ export function RequestsCard({ needsProfileCompletion }: RequestsCardProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         needsProfileCompletion={needsProfileCompletion}
+        userName={userName}
       />
     </>
   );

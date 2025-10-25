@@ -131,19 +131,27 @@ export const authOptions = {
       if (user && (user as { id?: string }).id) {
         token.id = (user as { id: string }).id;
       }
-      // Look up registrationNumber when possible
+      // Look up registrationNumber and phoneNumber when possible
       if (token?.id && process.env.DATABASE_URL) {
         try {
           const u = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { registrationNumber: true },
+            select: {
+              registrationNumber: true,
+              phoneNumber: true,
+              isAdmin: true,
+            },
           });
           token.registrationNumber = u?.registrationNumber ?? null;
+          token.phoneNumber = u?.phoneNumber ?? null;
+          token.isAdmin = u?.isAdmin ?? false;
         } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            console.warn("Failed to fetch user registration number:", error);
+            console.warn("Failed to fetch user data:", error);
           }
           token.registrationNumber = null;
+          token.phoneNumber = null;
+          token.isAdmin = false;
         }
       }
       return token;
@@ -154,6 +162,8 @@ export const authOptions = {
         session.user = { ...session.user, id: token.id as string };
       }
       session.registrationNumber = token.registrationNumber ?? null;
+      session.phoneNumber = token.phoneNumber ?? null;
+      session.isAdmin = token.isAdmin ?? false;
       return session;
     },
   },
@@ -161,5 +171,11 @@ export const authOptions = {
 
 export const getAuth = async () => {
   const session = await getServerSession(authOptions);
-  return session as (Session & { registrationNumber?: string | null }) | null;
+  return session as
+    | (Session & {
+        registrationNumber?: string | null;
+        phoneNumber?: string | null;
+        isAdmin?: boolean;
+      })
+    | null;
 };

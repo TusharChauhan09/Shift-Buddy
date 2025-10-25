@@ -22,6 +22,7 @@ interface RequestDetailsModalProps {
       id: string;
       name?: string | null;
       registrationNumber?: string | null;
+      phoneNumber?: string | null;
     };
   } | null;
 }
@@ -136,6 +137,14 @@ export function RequestDetailsModal({
                 </span>
                 <span className="text-sm flex-1">
                   {request.user?.registrationNumber || "Not provided"}
+                </span>
+              </div>
+              <div className="flex items-start">
+                <span className="text-sm font-medium text-muted-foreground w-32">
+                  Phone:
+                </span>
+                <span className="text-sm flex-1">
+                  {request.user?.phoneNumber || "Not provided"}
                 </span>
               </div>
             </div>

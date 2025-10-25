@@ -20,7 +20,14 @@ export async function GET() {
       where: { status: "open" },
       orderBy: { createdAt: "desc" },
       include: {
-        user: { select: { id: true, name: true, registrationNumber: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            registrationNumber: true,
+            phoneNumber: true,
+          },
+        },
       },
       take: 50,
     });
@@ -47,18 +54,42 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Check if user has a registration number
+    // Check if user has a registration number and phone number
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { registrationNumber: true },
+      select: { registrationNumber: true, phoneNumber: true },
     });
 
-    if (!user?.registrationNumber) {
+    if (!user?.registrationNumber || !user?.phoneNumber) {
+      const missing = [];
+      if (!user?.registrationNumber) missing.push("registration number");
+      if (!user?.phoneNumber) missing.push("phone number");
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `Please complete your profile with ${missing.join(
+            " and "
+          )} before posting a request.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Check if user already has 2 or more active requests
+    const activeRequestsCount = await prisma.request.count({
+      where: {
+        userId: session.user.id,
+        status: "open",
+      },
+    });
+
+    if (activeRequestsCount >= 2) {
       return NextResponse.json(
         {
           ok: false,
           error:
-            "Registration number required. Please complete your profile setup before posting a request.",
+            "You can only have 2 active requests at a time. Please delete one of your existing requests before creating a new one.",
         },
         { status: 403 }
       );
