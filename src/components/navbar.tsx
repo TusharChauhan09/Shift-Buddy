@@ -30,7 +30,7 @@ export function Navbar({
                 alt="Shift Buddy Logo"
                 width={32}
                 height={32}
-                className="w-7 h-7 sm:w-8 sm:h-8"
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               />
               <div className="flex flex-col">
                 <h1 className="text-base sm:text-lg md:text-xl font-semibold leading-tight">
