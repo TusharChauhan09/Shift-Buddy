@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import AzureADProvider from "next-auth/providers/azure-ad";
 import Credentials from "next-auth/providers/credentials";
 import type { Session } from "next-auth";
@@ -21,6 +22,10 @@ if (process.env.NODE_ENV === "development") {
     !!(process.env.GITHUB_ID && process.env.GITHUB_SECRET)
   );
   console.log(
+    "Google credentials available:",
+    !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+  );
+  console.log(
     "Azure AD credentials available:",
     !!(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET)
   );
@@ -36,6 +41,22 @@ const providers = [
           authorization: {
             params: {
               scope: "read:user user:email",
+            },
+          },
+        }),
+      ]
+    : []),
+  // Always add Google provider if credentials exist
+  ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? [
+        Google({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          authorization: {
+            params: {
+              prompt: "consent",
+              access_type: "offline",
+              response_type: "code",
             },
           },
         }),
