@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // PATCH /api/requests/[id] - update a request
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const session = await getAuth();
   if (!session?.user?.id) {
@@ -16,7 +16,7 @@ export async function PATCH(
   }
 
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const body = await req.json();
 
     console.log("Update request body:", body);
@@ -143,7 +143,7 @@ export async function PATCH(
 // DELETE /api/requests/[id] - delete a request
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   const session = await getAuth();
   if (!session?.user?.id) {
@@ -154,7 +154,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     // Verify the request belongs to the user
     const existingRequest = await prisma.request.findUnique({

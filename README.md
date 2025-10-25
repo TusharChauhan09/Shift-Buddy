@@ -1,3 +1,11 @@
+# Shift Buddy - Your Mutual Shift Guide
+
+A modern hostel room swap and exchange platform built with Next.js, enabling students to find mutual shift partners efficiently.
+
+## About
+
+Shift Buddy is your mutual shift guide for managing hostel room swaps and exchanges. Connect with fellow students to find the perfect room swap partner.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

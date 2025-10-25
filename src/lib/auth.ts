@@ -99,6 +99,23 @@ const providers = [
           where: { registrationNumber: normalizedReg },
         });
         if (!user || !user.passwordHash) return null;
+
+        // Check if user is banned
+        if (user.isBanned) {
+          throw new Error(
+            "Your account has been banned. Please contact support."
+          );
+        }
+
+        // Check if user is timed out
+        if (user.timeoutUntil && new Date(user.timeoutUntil) > new Date()) {
+          throw new Error(
+            `Your account is temporarily suspended until ${new Date(
+              user.timeoutUntil
+            ).toLocaleString()}.`
+          );
+        }
+
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
         return {
@@ -161,8 +178,19 @@ export const authOptions = {
               registrationNumber: true,
               phoneNumber: true,
               isAdmin: true,
+              isBanned: true,
+              timeoutUntil: true,
             },
           });
+
+          // Check if user is banned or timed out
+          if (u?.isBanned) {
+            throw new Error("Account banned");
+          }
+          if (u?.timeoutUntil && new Date(u.timeoutUntil) > new Date()) {
+            throw new Error("Account timed out");
+          }
+
           token.registrationNumber = u?.registrationNumber ?? null;
           token.phoneNumber = u?.phoneNumber ?? null;
           token.isAdmin = u?.isAdmin ?? false;

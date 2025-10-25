@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAuth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,62 +11,97 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UserActionsModal } from "@/components/admin/user-actions-modal";
+import { EditRequestModal } from "@/components/admin/edit-request-modal";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
-async function getDashboardData() {
-  try {
-    const [users, requests] = await Promise.all([
-      prisma.user.findMany({
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          registrationNumber: true,
-          phoneNumber: true,
-          isAdmin: true,
-          createdAt: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
-      prisma.request.findMany({
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-              registrationNumber: true,
-              phoneNumber: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      }),
-    ]);
-
-    return { users, requests };
-  } catch (error) {
-    console.error("Error fetching dashboard data:", error);
-    return { users: [], requests: [] };
-  }
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  registrationNumber: string | null;
+  phoneNumber: string | null;
+  isAdmin: boolean;
+  isBanned?: boolean;
+  timeoutUntil?: Date | null;
+  createdAt: Date;
 }
 
-export default async function DashboardPage() {
-  const session = await getAuth();
+interface RequestData {
+  id: string;
+  currentHostel: string;
+  currentBlock: string | null;
+  currentFloor: string | null;
+  currentRoom: string | null;
+  desiredHostel: string;
+  desiredBlock: string | null;
+  desiredFloor: string | null;
+  desiredRoom: string | null;
+  message: string | null;
+  createdAt: Date;
+  user: {
+    name: string | null;
+    email: string | null;
+    registrationNumber: string | null;
+    phoneNumber: string | null;
+  };
+}
 
-  // Check if user is authenticated
-  if (!session) {
-    redirect("/auth/signin");
+export default function DashboardPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<unknown>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [requests, setRequests] = useState<RequestData[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestData | null>(
+    null
+  );
+
+  const loadData = async () => {
+    try {
+      // Get session
+      const { getSession } = await import("next-auth/react");
+      const sessionData = await getSession();
+
+      if (!sessionData) {
+        router.push("/auth/signin");
+        return;
+      }
+
+      // @ts-expect-error - isAdmin is added to session in auth config
+      if (!sessionData.isAdmin) {
+        router.push("/");
+        return;
+      }
+
+      setSession(sessionData);
+
+      // Fetch dashboard data
+      const response = await fetch("/api/admin/dashboard");
+      const data = await response.json();
+
+      setUsers(data.users || []);
+      setRequests(data.requests || []);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner className="w-8 h-8" />
+      </div>
+    );
   }
-
-  // Check if user is admin
-  if (!session.isAdmin) {
-    redirect("/");
-  }
-
-  const { users, requests } = await getDashboardData();
 
   // Calculate statistics
   const totalUsers = users.length;
@@ -74,6 +110,7 @@ export default async function DashboardPage() {
   const usersWithCompleteProfile = users.filter(
     (u) => u.registrationNumber && u.phoneNumber
   ).length;
+  const bannedUsers = users.filter((u) => u.isBanned).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,7 +134,7 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm text-muted-foreground">
-                {session.user?.name}
+                {(session as { user?: { name?: string } })?.user?.name}
               </span>
             </div>
           </div>
@@ -107,7 +144,7 @@ export default async function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8 pb-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Users</CardDescription>
@@ -132,6 +169,12 @@ export default async function DashboardPage() {
               <CardTitle className="text-3xl">
                 {usersWithCompleteProfile}
               </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Banned Users</CardDescription>
+              <CardTitle className="text-3xl">{bannedUsers}</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -225,8 +268,18 @@ export default async function DashboardPage() {
                           </div>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground text-right whitespace-nowrap">
-                        {new Date(request.createdAt).toLocaleDateString()}
+                      <div className="flex flex-col gap-2 items-end">
+                        <div className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedRequest(request)}
+                          className="h-8 text-xs"
+                        >
+                          Edit
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -267,6 +320,17 @@ export default async function DashboardPage() {
                               Admin
                             </span>
                           )}
+                          {user.isBanned && (
+                            <span className="px-2 py-0.5 bg-destructive/10 text-destructive text-xs font-medium rounded">
+                              Banned
+                            </span>
+                          )}
+                          {user.timeoutUntil &&
+                            new Date(user.timeoutUntil) > new Date() && (
+                              <span className="px-2 py-0.5 bg-orange-500/10 text-orange-500 text-xs font-medium rounded">
+                                Timeout
+                              </span>
+                            )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {user.email}
@@ -292,8 +356,18 @@ export default async function DashboardPage() {
                           )}
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Joined {new Date(user.createdAt).toLocaleDateString()}
+                      <div className="flex flex-col gap-2 items-end">
+                        <div className="text-xs text-muted-foreground">
+                          Joined {new Date(user.createdAt).toLocaleDateString()}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedUser(user)}
+                          className="h-8 text-xs"
+                        >
+                          Manage
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -303,6 +377,31 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Modals */}
+      {selectedUser && (
+        <UserActionsModal
+          user={selectedUser}
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onSuccess={() => {
+            setSelectedUser(null);
+            loadData();
+          }}
+        />
+      )}
+
+      {selectedRequest && (
+        <EditRequestModal
+          request={selectedRequest}
+          isOpen={!!selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          onSuccess={() => {
+            setSelectedRequest(null);
+            loadData();
+          }}
+        />
+      )}
     </div>
   );
 }

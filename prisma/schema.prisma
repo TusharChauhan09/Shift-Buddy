@@ -22,6 +22,8 @@ model User {
   phoneNumber        String?
   passwordHash       String?
   isAdmin            Boolean  @default(false)
+  isBanned           Boolean  @default(false)
+  timeoutUntil       DateTime?
 
   accounts           Account[]
   sessions           Session[]

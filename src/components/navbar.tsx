@@ -23,10 +23,15 @@ export function Navbar({
       <div className="px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
           <div className="flex-shrink-0">
-            <h1 className="text-base sm:text-lg md:text-xl font-semibold">
-              <span className="hidden sm:inline">Hostel Management System</span>
-              <span className="sm:hidden">HMS</span>
-            </h1>
+            <div className="flex flex-col">
+              <h1 className="text-base sm:text-lg md:text-xl font-semibold leading-tight">
+                <span className="hidden sm:inline">Shift Buddy</span>
+                <span className="sm:hidden">Shift Buddy</span>
+              </h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
+                your mutual shift guide
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {isAdmin && (
