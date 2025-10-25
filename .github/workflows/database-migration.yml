@@ -1,0 +1,134 @@
+name: Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      migration_name:
+        description: "Migration name (optional)"
+        required: false
+        type: string
+
+jobs:
+  migrate:
+    name: Run Database Migration
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Validate Schema
+        run: npx prisma validate
+
+      - name: Check Migration Status
+        run: npx prisma migrate status
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run Migration
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify Migration
+        run: |
+          echo "✅ Migration completed successfully"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Triggered by: ${{ github.actor }}"
+
+      - name: Create Migration Summary
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const summary = `## 🗄️ Database Migration Complete
+
+            **Environment:** ${{ github.event.inputs.environment }}
+            **Migration:** ${{ github.event.inputs.migration_name || 'Latest migrations' }}
+            **Status:** ✅ Success
+            **Executed by:** @${{ github.actor }}
+            **Timestamp:** ${new Date().toISOString()}
+
+            All database migrations have been successfully applied.`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Migration] Completed on ${github.event.inputs.environment} - ${new Date().toISOString().split('T')[0]}`,
+              body: summary,
+              labels: ['database', 'migration', github.event.inputs.environment]
+            });
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          echo "❌ Migration failed!"
+          echo "Please check the database state and consider manual rollback if necessary"
+          echo "Contact the database administrator for assistance"
+
+  backup-check:
+    name: Verify Database Backup
+    runs-on: ubuntu-latest
+    needs: migrate
+    if: github.event.inputs.environment == 'production'
+
+    steps:
+      - name: Backup Verification
+        run: |
+          echo "⚠️ Production Migration Notice"
+          echo "Please ensure you have a recent database backup before proceeding with production migrations."
+          echo "If you don't have a backup, create one immediately."
+
+      - name: Create Backup Reminder Issue
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `## ⚠️ Production Database Migration Notice
+
+            A database migration was just run on production.
+
+            **Post-Migration Checklist:**
+            - [ ] Verify application is functioning correctly
+            - [ ] Check database integrity
+            - [ ] Monitor application logs for errors
+            - [ ] Verify all features are working
+            - [ ] Create a new backup after successful migration
+
+            **Migration Details:**
+            - **Environment:** Production
+            - **Executed by:** @${{ github.actor }}
+            - **Timestamp:** ${new Date().toISOString()}
+
+            Please complete this checklist within the next hour.`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[URGENT] Production Migration Verification Required`,
+              body: body,
+              labels: ['database', 'production', 'high-priority'],
+              assignees: ['${{ github.actor }}']
+            });

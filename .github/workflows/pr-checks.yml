@@ -1,0 +1,146 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # Check PR title and description
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+          requireScope: false
+        continue-on-error: true
+
+  # Run tests and build
+  test-and-build:
+    name: Test & Build PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const message = `${status} Build ${job.status}
+
+            **Branch:** \`${{ github.head_ref }}\`
+            **Commit:** \`${{ github.sha }}\`
+            **Author:** @${{ github.actor }}
+
+            ${status === '✅' ? '🎉 All checks passed! Ready for review.' : '⚠️ Some checks failed. Please review the logs.'}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+  # Check for merge conflicts
+  merge-conflict-check:
+    name: Check Merge Conflicts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for merge conflicts
+        run: |
+          git fetch origin main
+          git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -q "^<<<<<" && echo "⚠️ Merge conflicts detected!" && exit 1 || echo "✅ No merge conflicts"
+
+  # Size comparison
+  bundle-size:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build and analyze
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+
+      - name: Analyze bundle size
+        run: |
+          echo "📦 Build Output Size:"
+          du -sh .next
+          echo ""
+          echo "📊 Static Pages:"
+          du -sh .next/static || echo "No static files"

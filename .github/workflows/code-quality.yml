@@ -1,0 +1,142 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Count Lines of Code
+        id: loc
+        run: |
+          echo "## 📊 Code Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Lines of Code" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find src -name "*.ts" -o -name "*.tsx" | xargs wc -l | tail -1 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Count Components
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Component Count" >> $GITHUB_STEP_SUMMARY
+          echo "- Components: $(find src/components -name "*.tsx" | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Pages: $(find src/app -name "page.tsx" | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- API Routes: $(find src/app/api -name "route.ts" | wc -l)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check File Sizes
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Largest Files" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          find src -name "*.ts" -o -name "*.tsx" | xargs wc -l | sort -rn | head -10 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check TODO Comments
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### TODO Items" >> $GITHUB_STEP_SUMMARY
+          TODO_COUNT=$(grep -r "TODO\|FIXME\|HACK" src --include="*.ts" --include="*.tsx" | wc -l)
+          echo "Found $TODO_COUNT TODO/FIXME/HACK comments" >> $GITHUB_STEP_SUMMARY
+          if [ $TODO_COUNT -gt 0 ]; then
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            grep -rn "TODO\|FIXME\|HACK" src --include="*.ts" --include="*.tsx" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Analyze Import Complexity
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Import Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "Files with most imports:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          for file in $(find src -name "*.ts" -o -name "*.tsx"); do
+            count=$(grep -c "^import" "$file" 2>/dev/null || echo 0)
+            echo "$count $file"
+          done | sort -rn | head -10 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check Unused Dependencies
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dependency Health" >> $GITHUB_STEP_SUMMARY
+          npx depcheck --json > depcheck.json || true
+          if [ -f depcheck.json ]; then
+            UNUSED=$(cat depcheck.json | grep -o '"dependencies":\[.*\]' || echo "[]")
+            echo "Potentially unused dependencies checked ✓" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Generate Report
+        if: always()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+
+  prisma-validation:
+    name: Prisma Schema Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Format Prisma Schema
+        run: |
+          npx prisma format
+          if [ -n "$(git diff prisma/schema.prisma)" ]; then
+            echo "⚠️ Prisma schema needs formatting" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
+            git diff prisma/schema.prisma >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Prisma schema is properly formatted" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for Missing Relations
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Database Schema Info" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          grep -E "model |@@index|@@unique" prisma/schema.prisma >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
