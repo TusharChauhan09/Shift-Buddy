@@ -88,7 +88,7 @@ export default async function MyRequestsPage() {
   return (
     <div className="min-h-screen bg-background pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-7xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
+      <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-6xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
         <div className="px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             <Link
@@ -122,7 +122,7 @@ export default async function MyRequestsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
+      <main className="max-w-6xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
         {needsProfileCompletion && (
           <div className="mb-6 bg-secondary border border-border rounded-lg p-4">
             <div className="flex items-center">

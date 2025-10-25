@@ -19,8 +19,8 @@ export function Navbar({
   isAdmin,
 }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-7xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
-      <div className="px-3 sm:px-4 md:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-6xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
+      <div className="px-3 sm:px-4 md:px-5 lg:px-6">
         <div className="flex justify-between items-center h-14 sm:h-16">
           <div className="flex-shrink-0">
             <div className="flex flex-col">

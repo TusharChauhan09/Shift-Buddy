@@ -12,6 +12,7 @@ import { getAuth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { RequestsCard } from "@/components/requests-card";
 import { FilteredRequests } from "@/components/filtered-requests";
+import { FeedbackCard } from "@/components/feedback-card";
 
 async function getRequests() {
   try {
@@ -156,7 +157,7 @@ export default async function Home() {
         )}
 
         {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Hostel Requests Quick Action */}
           <RequestsCard
             needsProfileCompletion={needsProfileCompletion}
@@ -184,6 +185,9 @@ export default async function Home() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Contact Us / Feedback Card */}
+          <FeedbackCard />
         </div>
 
         {/* Hostel Swap Requests */}

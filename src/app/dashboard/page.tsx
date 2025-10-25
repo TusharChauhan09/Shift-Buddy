@@ -14,6 +14,7 @@ import {
 import { UserActionsModal } from "@/components/admin/user-actions-modal";
 import { EditRequestModal } from "@/components/admin/edit-request-modal";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 interface User {
   id: string;
@@ -47,16 +48,35 @@ interface RequestData {
   };
 }
 
+interface FeedbackData {
+  id: string;
+  subject: string;
+  message: string;
+  status: string;
+  createdAt: Date;
+  user: {
+    name: string | null;
+    email: string | null;
+    registrationNumber: string | null;
+  };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<unknown>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [requests, setRequests] = useState<RequestData[]>([]);
+  const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<RequestData | null>(
     null
   );
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [feedbackToDelete, setFeedbackToDelete] = useState<{
+    id: string;
+    subject: string;
+  } | null>(null);
 
   const loadData = async () => {
     try {
@@ -83,6 +103,7 @@ export default function DashboardPage() {
 
       setUsers(data.users || []);
       setRequests(data.requests || []);
+      setFeedbacks(data.feedbacks || []);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
@@ -111,11 +132,52 @@ export default function DashboardPage() {
     (u) => u.registrationNumber && u.phoneNumber
   ).length;
   const bannedUsers = users.filter((u) => u.isBanned).length;
+  const totalFeedbacks = feedbacks.length;
+  const newFeedbacks = feedbacks.filter((f) => f.status === "new").length;
+
+  const handleFeedbackStatusChange = async (
+    feedbackId: string,
+    status: string
+  ) => {
+    try {
+      await fetch(`/api/feedback/${feedbackId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      loadData();
+    } catch (error) {
+      console.error("Error updating feedback status:", error);
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId: string) => {
+    try {
+      await fetch(`/api/feedback/${feedbackId}`, {
+        method: "DELETE",
+      });
+      loadData();
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+    }
+  };
+
+  const openDeleteModal = (feedbackId: string, subject: string) => {
+    setFeedbackToDelete({ id: feedbackId, subject });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (feedbackToDelete) {
+      handleDeleteFeedback(feedbackToDelete.id);
+      setFeedbackToDelete(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-7xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
+      <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-6xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
         <div className="px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex items-center gap-4">
@@ -142,9 +204,9 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8 pb-8">
+      <main className="max-w-6xl mx-auto pt-6 px-4 sm:px-6 lg:px-8 pb-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Users</CardDescription>
@@ -177,7 +239,122 @@ export default function DashboardPage() {
               <CardTitle className="text-3xl">{bannedUsers}</CardTitle>
             </CardHeader>
           </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Feedbacks</CardDescription>
+              <CardTitle className="text-3xl">
+                {totalFeedbacks}
+                {newFeedbacks > 0 && (
+                  <span className="text-sm ml-2 text-orange-500">
+                    ({newFeedbacks} new)
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
+
+        {/* Feedbacks Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>User Feedback</CardTitle>
+            <CardDescription>
+              View and manage feedback from users
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {feedbacks.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No feedback found
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {feedbacks.map((feedback) => (
+                  <div
+                    key={feedback.id}
+                    className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold">
+                              {feedback.subject}
+                            </h3>
+                            <span
+                              className={`px-2 py-0.5 text-xs font-medium rounded ${
+                                feedback.status === "new"
+                                  ? "bg-orange-500/10 text-orange-500"
+                                  : feedback.status === "read"
+                                  ? "bg-blue-500/10 text-blue-500"
+                                  : "bg-green-500/10 text-green-500"
+                              }`}
+                            >
+                              {feedback.status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {feedback.message}
+                          </p>
+                          <div className="text-xs text-muted-foreground">
+                            <p>
+                              From: {feedback.user.name || "Unknown"} (
+                              {feedback.user.registrationNumber || "No Reg"})
+                            </p>
+                            <p>
+                              {new Date(feedback.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {feedback.status !== "read" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleFeedbackStatusChange(feedback.id, "read")
+                              }
+                              className="h-8 text-xs"
+                            >
+                              Mark Read
+                            </Button>
+                          )}
+                          {feedback.status !== "resolved" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleFeedbackStatusChange(
+                                  feedback.id,
+                                  "resolved"
+                                )
+                              }
+                              className="h-8 text-xs"
+                            >
+                              Resolve
+                            </Button>
+                          )}
+                          {feedback.status === "resolved" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                openDeleteModal(feedback.id, feedback.subject)
+                              }
+                              className="h-8 text-xs border-red-500 text-red-500 hover:bg-red-500/10"
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* All Requests Section */}
         <Card className="mb-8">
@@ -402,6 +579,19 @@ export default function DashboardPage() {
           }}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setFeedbackToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Delete Feedback"
+        description="Are you sure you want to delete this feedback?"
+        itemName={feedbackToDelete?.subject}
+      />
     </div>
   );
 }

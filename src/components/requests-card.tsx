@@ -30,7 +30,7 @@ export function RequestsCard({
             Post or view requests in the section below
           </CardDescription>
         </CardHeader>
-        <CardContent className="pb-3 pt-2 px-6">
+        <CardContent>
           <Button
             className="w-full"
             disabled={needsProfileCompletion}

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 
 interface EditRequestModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function EditRequestModal({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     currentHostel: request?.currentHostel || "",
     currentBlock: request?.currentBlock || "",
@@ -102,8 +104,6 @@ export function EditRequestModal({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this request?")) return;
-
     setLoading(true);
     setError(null);
 
@@ -118,6 +118,7 @@ export function EditRequestModal({
         throw new Error(result.error || "Failed to delete request");
       }
 
+      setDeleteModalOpen(false);
       onClose();
       router.refresh();
     } catch (err) {
@@ -351,11 +352,11 @@ export function EditRequestModal({
             <Button
               type="button"
               variant="outline"
-              onClick={handleDelete}
+              onClick={() => setDeleteModalOpen(true)}
               disabled={loading}
               className="flex-1 text-destructive hover:bg-destructive/10"
             >
-              {loading ? "Deleting..." : "Delete"}
+              Delete
             </Button>
             <Button
               type="button"
@@ -371,6 +372,16 @@ export function EditRequestModal({
           </div>
         </form>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Request"
+        description="Are you sure you want to delete this hostel swap request?"
+        itemName={`${request?.currentHostel} ➜ ${request?.desiredHostel}`}
+      />
     </div>
   );
 }

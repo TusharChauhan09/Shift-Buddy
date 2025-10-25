@@ -1,7 +1,13 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -13,7 +19,10 @@ interface ErrorBoundaryProps {
   fallback?: React.ComponentType<{ error: Error; reset: () => void }>;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -32,7 +41,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError) {
       const reset = () => this.setState({ hasError: false });
-      
+
       if (this.props.fallback) {
         const Fallback = this.props.fallback;
         return <Fallback error={this.state.error!} reset={reset} />;
@@ -48,14 +57,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                <details>
-                  <summary className="cursor-pointer">Error details</summary>
-                  <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
-                    {this.state.error?.message}
-                  </pre>
-                </details>
-              </div>
               <div className="flex gap-2">
                 <Button onClick={reset} variant="outline">
                   Try again

@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [users, requests] = await Promise.all([
+    const [users, requests, feedbacks] = await Promise.all([
       prisma.user.findMany({
         select: {
           id: true,
@@ -42,9 +42,23 @@ export async function GET() {
           createdAt: "desc",
         },
       }),
+      prisma.feedback.findMany({
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              registrationNumber: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
     ]);
 
-    return NextResponse.json({ users, requests });
+    return NextResponse.json({ users, requests, feedbacks });
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     return NextResponse.json(
