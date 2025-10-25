@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import AppSessionProvider from "@/components/providers/session-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({
   variable: "--font-body",
@@ -28,9 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
-        <AppSessionProvider>
-          {children}
-        </AppSessionProvider>
+        <ErrorBoundary>
+          <AppSessionProvider>
+            {children}
+          </AppSessionProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

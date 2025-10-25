@@ -23,6 +23,7 @@ model User {
 
   accounts           Account[]
   sessions           Session[]
+  requests           Request[]
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -62,4 +63,25 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Hostel swap request model
+model Request {
+ id            String   @id @default(cuid())
+ userId        String
+ user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ currentHostel String
+ currentBlock  String?
+ currentFloor  String?
+ currentRoom   String?
+ desiredHostel String
+ desiredBlock  String?
+ desiredFloor  String?
+ desiredRoom   String?
+ message       String?
+ status        String   @default("open") // open, matched, closed
+ createdAt     DateTime @default(now())
+ updatedAt     DateTime @updatedAt
+
+ @@index([status, createdAt])
 }

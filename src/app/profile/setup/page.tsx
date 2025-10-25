@@ -23,7 +23,7 @@ function ProfileSetupForm() {
   }, [session]);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/auth/signin");
+    if (status === "unauthenticated") router.push("/auth/signup");
   }, [status, router]);
 
   async function onSubmit(e: React.FormEvent) {

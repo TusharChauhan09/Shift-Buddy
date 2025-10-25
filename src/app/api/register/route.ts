@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import { registrationSchema } from "@/lib/validation";
 
 export async function POST(req: Request) {
   try {
-    const { registrationNumber, password, name, email } = await req.json();
-    if (!registrationNumber || !password) {
-      return NextResponse.json({ error: "Missing registrationNumber or password" }, { status: 400 });
+    const body = await req.json().catch(() => ({}));
+    const parsed = registrationSchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues.map((i) => i.message).join(", ");
+      return NextResponse.json({ error: message }, { status: 400 });
     }
+
+    const name = parsed.data.name.trim();
+    const email = parsed.data.email.trim().toLowerCase();
+    const registrationNumber = parsed.data.registrationNumber.trim().toUpperCase();
+    const password = parsed.data.password;
 
     const existing = await prisma.user.findFirst({
       where: { OR: [{ registrationNumber }, { email }] },

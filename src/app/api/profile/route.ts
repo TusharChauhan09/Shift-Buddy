@@ -8,12 +8,16 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { name, registrationNumber } = await req.json();
+  // Normalize registration number: trim + uppercase; treat empty string as undefined (no update)
+  const normalizedReg = typeof registrationNumber === "string"
+    ? registrationNumber.trim().toUpperCase() || undefined
+    : undefined;
   try {
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        name: name ?? undefined,
-        registrationNumber: registrationNumber ?? undefined,
+        name: typeof name === "string" ? (name.trim() || undefined) : undefined,
+        registrationNumber: normalizedReg,
       },
       select: { id: true, name: true, registrationNumber: true },
     });
