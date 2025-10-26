@@ -56,13 +56,23 @@ export function FilteredRequests({ items }: FilteredRequestsProps) {
       }
 
       // Filter by seater
-      if (selectedSeater !== "All" && item.seater !== parseInt(selectedSeater)) {
+      if (
+        selectedSeater !== "All" &&
+        item.seater !== parseInt(selectedSeater)
+      ) {
         return false;
       }
 
       return true;
     });
-  }, [items, selectedHostel, selectedFloor, selectedRoomType, selectedSeater, filterMode]);
+  }, [
+    items,
+    selectedHostel,
+    selectedFloor,
+    selectedRoomType,
+    selectedSeater,
+    filterMode,
+  ]);
 
   const handleReset = () => {
     setHostelType(null);
@@ -312,7 +322,9 @@ export function FilteredRequests({ items }: FilteredRequestsProps) {
                 <Button
                   key={num}
                   size="sm"
-                  variant={selectedSeater === num.toString() ? "default" : "outline"}
+                  variant={
+                    selectedSeater === num.toString() ? "default" : "outline"
+                  }
                   onClick={() => setSelectedSeater(num.toString())}
                   className="h-8 w-8 p-0 text-xs"
                 >
@@ -323,7 +335,10 @@ export function FilteredRequests({ items }: FilteredRequestsProps) {
           </div>
 
           {/* Active Filters Display */}
-          {(hostelType || selectedFloor !== "All Floors" || selectedRoomType !== "All" || selectedSeater !== "All") && (
+          {(hostelType ||
+            selectedFloor !== "All Floors" ||
+            selectedRoomType !== "All" ||
+            selectedSeater !== "All") && (
             <div className="flex flex-wrap gap-1.5 items-center pt-1 border-t border-border">
               <span className="text-xs text-muted-foreground">Active:</span>
               {selectedHostel !== "All Hostels" && (
