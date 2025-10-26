@@ -55,15 +55,14 @@ async function RequestsSection() {
   console.log("RequestsSection - Total items:", items.length);
   console.log("RequestsSection - Current user ID:", session?.user?.id);
 
-  // TEMPORARILY SHOWING ALL REQUESTS (including your own) for debugging
   // Filter out current user's own requests
-  // const otherUsersRequests = items.filter(
-  //   (item: any) => item.userId !== session?.user?.id
-  // );
+  const otherUsersRequests = items.filter(
+    (item: any) => item.userId !== session?.user?.id
+  );
 
-  console.log("RequestsSection - Showing all requests:", items.length);
+  console.log("RequestsSection - After filter:", otherUsersRequests.length);
 
-  return <FilteredRequests items={items} />;
+  return <FilteredRequests items={otherUsersRequests} />;
 }
 
 function CreateRequestForm({ disabled }: { disabled?: boolean }) {
