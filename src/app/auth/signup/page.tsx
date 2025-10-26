@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import Image from "next/image";
 
 export default function SignUpPage() {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -266,20 +267,14 @@ export default function SignUpPage() {
     <div className="w-full max-w-sm mx-auto bg-card rounded-xl shadow-lg border border-border overflow-hidden">
       {/* Header with Icon */}
       <div className="p-5 pb-4 text-center border-b border-border">
-        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-          <svg
-            className="w-6 h-6 text-primary"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
+        <div className="w-16 h-16 flex items-center justify-center mx-auto mb-3">
+          <Image
+            src="/shift.png"
+            alt="Shift Buddy Logo"
+            width={64}
+            height={64}
+            className="w-16 h-16 object-contain"
+          />
         </div>
         <h1 className="text-lg font-bold text-foreground">Shift Buddy</h1>
         <p className="text-xs text-muted-foreground mt-0.5">
