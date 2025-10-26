@@ -13,11 +13,8 @@ import { Button } from "@/components/ui/button";
 
 async function getRequests() {
   try {
-    // In development, force localhost; in production, use NEXTAUTH_URL
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? process.env.NEXTAUTH_URL || "http://localhost:3000"
-        : "http://localhost:3000";
+    // Use production URL
+    const baseUrl = "https://shift-buddy-red.vercel.app";
     const url = `${baseUrl}/api/requests`;
     console.log("[My Requests] Fetching from:", url);
 

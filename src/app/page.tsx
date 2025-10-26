@@ -16,12 +16,8 @@ import { FeedbackCard } from "@/components/feedback-card";
 
 async function getRequests() {
   try {
-    // Use absolute URL for server-side fetching
-    // In development, force localhost; in production, use NEXTAUTH_URL
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? process.env.NEXTAUTH_URL || "http://localhost:3000"
-        : "http://localhost:3000";
+    // Use production URL
+    const baseUrl = "https://shift-buddy-red.vercel.app";
     const url = `${baseUrl}/api/requests`;
     console.log("Fetching requests from:", url);
 
@@ -59,14 +55,15 @@ async function RequestsSection() {
   console.log("RequestsSection - Total items:", items.length);
   console.log("RequestsSection - Current user ID:", session?.user?.id);
 
+  // TEMPORARILY SHOWING ALL REQUESTS (including your own) for debugging
   // Filter out current user's own requests
-  const otherUsersRequests = items.filter(
-    (item: any) => item.userId !== session?.user?.id
-  );
+  // const otherUsersRequests = items.filter(
+  //   (item: any) => item.userId !== session?.user?.id
+  // );
 
-  console.log("RequestsSection - After filter:", otherUsersRequests.length);
+  console.log("RequestsSection - Showing all requests:", items.length);
 
-  return <FilteredRequests items={otherUsersRequests} />;
+  return <FilteredRequests items={items} />;
 }
 
 function CreateRequestForm({ disabled }: { disabled?: boolean }) {
