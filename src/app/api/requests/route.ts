@@ -31,6 +31,19 @@ export async function GET() {
       },
       take: 50,
     });
+
+    console.log("[API /api/requests] Returning", items.length, "requests");
+    if (items.length > 0) {
+      console.log("[API /api/requests] First request:", {
+        id: items[0].id,
+        userId: items[0].userId,
+        currentHostel: items[0].currentHostel,
+        desiredHostel: items[0].desiredHostel,
+        roomType: items[0].roomType,
+        seater: items[0].seater,
+      });
+    }
+
     return NextResponse.json({ ok: true, items });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {

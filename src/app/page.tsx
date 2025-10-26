@@ -17,18 +17,34 @@ import { FeedbackCard } from "@/components/feedback-card";
 async function getRequests() {
   try {
     // Use absolute URL for server-side fetching
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/requests`, {
+    // In development, force localhost; in production, use NEXTAUTH_URL
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.NEXTAUTH_URL || "http://localhost:3000"
+        : "http://localhost:3000";
+    const url = `${baseUrl}/api/requests`;
+    console.log("Fetching requests from:", url);
+
+    const res = await fetch(url, {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    console.log("Fetch response status:", res.status);
+
     if (!res.ok) {
       console.error("Failed to fetch requests:", res.status, res.statusText);
       return [] as any[];
     }
+
     const data = await res.json();
+    console.log("Fetched data:", {
+      ok: data.ok,
+      itemsCount: data.items?.length,
+    });
+
     return (data.items ?? []) as any[];
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -40,10 +56,15 @@ async function RequestsSection() {
   const session = await getAuth();
   const items = await getRequests();
 
+  console.log("RequestsSection - Total items:", items.length);
+  console.log("RequestsSection - Current user ID:", session?.user?.id);
+
   // Filter out current user's own requests
   const otherUsersRequests = items.filter(
     (item: any) => item.userId !== session?.user?.id
   );
+
+  console.log("RequestsSection - After filter:", otherUsersRequests.length);
 
   return <FilteredRequests items={otherUsersRequests} />;
 }

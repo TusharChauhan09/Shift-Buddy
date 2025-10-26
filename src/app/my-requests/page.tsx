@@ -13,18 +13,33 @@ import { Button } from "@/components/ui/button";
 
 async function getRequests() {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/requests`, {
+    // In development, force localhost; in production, use NEXTAUTH_URL
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.NEXTAUTH_URL || "http://localhost:3000"
+        : "http://localhost:3000";
+    const url = `${baseUrl}/api/requests`;
+    console.log("[My Requests] Fetching from:", url);
+
+    const res = await fetch(url, {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    console.log("[My Requests] Response status:", res.status);
+
     if (!res.ok) {
       console.error("Failed to fetch requests:", res.status, res.statusText);
       return [] as any[];
     }
     const data = await res.json();
+    console.log("[My Requests] Data:", {
+      ok: data.ok,
+      itemsCount: data.items?.length,
+    });
+
     return (data.items ?? []) as any[];
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -36,10 +51,15 @@ async function MyRequestsSection() {
   const session = await getAuth();
   const items = await getRequests();
 
+  console.log("[My Requests Section] Total items:", items.length);
+  console.log("[My Requests Section] Current user ID:", session?.user?.id);
+
   // Get only current user's requests
   const myRequests = items.filter(
     (item: any) => item.userId === session?.user?.id
   );
+
+  console.log("[My Requests Section] My requests count:", myRequests.length);
 
   if (!myRequests.length) {
     return (
