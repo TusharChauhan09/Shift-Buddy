@@ -1,6 +1,7 @@
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import Link from "next/link";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface NavbarProps {
   userName?: string | null;
@@ -58,6 +59,7 @@ export function Navbar({
             <span className="text-xs text-muted-foreground font-semibold md:hidden">
               {userName?.split(" ")[0] || "User"}
             </span>
+            <ThemeToggle />
             <ProfileDropdown
               user={{ name: userName, image: userImage, email: userEmail }}
               registrationNumber={registrationNumber}
