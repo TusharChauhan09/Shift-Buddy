@@ -17,6 +17,8 @@ interface EditRequestModalProps {
     desiredBlock?: string | null;
     desiredFloor?: string | null;
     desiredRoom?: string | null;
+    roomType?: string;
+    seater?: number;
     message?: string | null;
     status: string;
   } | null;
@@ -40,6 +42,8 @@ export function EditRequestModal({
     desiredBlock: request?.desiredBlock || "",
     desiredFloor: request?.desiredFloor || "",
     desiredRoom: request?.desiredRoom || "",
+    roomType: request?.roomType || "",
+    seater: request?.seater?.toString() || "",
     message: request?.message || "",
   });
 
@@ -55,6 +59,8 @@ export function EditRequestModal({
         desiredBlock: request.desiredBlock || "",
         desiredFloor: request.desiredFloor || "",
         desiredRoom: request.desiredRoom || "",
+        roomType: request.roomType || "",
+        seater: request.seater?.toString() || "",
         message: request.message || "",
       });
     }
@@ -76,6 +82,8 @@ export function EditRequestModal({
         desiredFloor: formData.desiredFloor.trim() || null,
         currentRoom: formData.currentRoom.trim() || null,
         desiredRoom: formData.desiredRoom.trim() || null,
+        roomType: formData.roomType.trim(),
+        seater: parseInt(formData.seater),
         message: formData.message.trim() || null,
       };
 
@@ -210,6 +218,50 @@ export function EditRequestModal({
                 disabled={loading}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="edit-roomType" className="text-sm font-medium">
+                Room Type <span className="text-destructive">*</span>
+              </label>
+              <select
+                id="edit-roomType"
+                value={formData.roomType}
+                onChange={(e) =>
+                  setFormData({ ...formData, roomType: e.target.value })
+                }
+                required
+                disabled={loading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select Room Type</option>
+                <option value="AC">AC</option>
+                <option value="Non-AC">Non-AC</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="edit-seater" className="text-sm font-medium">
+                Seater <span className="text-destructive">*</span>
+              </label>
+              <select
+                id="edit-seater"
+                value={formData.seater}
+                onChange={(e) =>
+                  setFormData({ ...formData, seater: e.target.value })
+                }
+                required
+                disabled={loading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select Seater</option>
+                <option value="1">1 Seater (Single)</option>
+                <option value="2">2 Seater (Double Sharing)</option>
+                <option value="3">3 Seater (Triple Sharing)</option>
+                <option value="4">4 Seater (Four Sharing)</option>
+                <option value="5">5 Seater (Five Sharing)</option>
+              </select>
             </div>
           </div>
 
