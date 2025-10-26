@@ -94,6 +94,8 @@ export function RequestModal({
       desiredFloor: formData.get("desiredFloor"),
       desiredRoom: formData.get("desiredRoom"),
       message: formData.get("message"),
+      roomType: formData.get("roomType"),
+      seater: formData.get("seater"),
     };
 
     try {
@@ -239,6 +241,47 @@ export function RequestModal({
               </Button>
             </div>
           </div>
+
+          {/* AC/Non-AC and Seater Selection */}
+          {hostelType && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="roomType" className="text-sm font-medium">
+                  Room Type <span className="text-destructive">*</span>
+                </label>
+                <select
+                  id="roomType"
+                  name="roomType"
+                  required
+                  disabled={needsProfileCompletion || loading}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select Room Type</option>
+                  <option value="AC">AC</option>
+                  <option value="Non-AC">Non-AC</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="seater" className="text-sm font-medium">
+                  Seater <span className="text-destructive">*</span>
+                </label>
+                <select
+                  id="seater"
+                  name="seater"
+                  required
+                  disabled={needsProfileCompletion || loading}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select Seater</option>
+                  <option value="1">1 Seater (Single)</option>
+                  <option value="2">2 Seater (Double Sharing)</option>
+                  <option value="3">3 Seater (Triple Sharing)</option>
+                  <option value="4">4 Seater (Four Sharing)</option>
+                  <option value="5">5 Seater (Five Sharing)</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Show hostel number selection only after type is selected */}
           {hostelType && (
