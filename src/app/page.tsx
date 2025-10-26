@@ -68,6 +68,31 @@ function CreateRequestForm({ disabled }: { disabled?: boolean }) {
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <select
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          name="roomType"
+          required
+          disabled={disabled}
+        >
+          <option value="">Select Room Type *</option>
+          <option value="AC">AC</option>
+          <option value="Non-AC">Non-AC</option>
+        </select>
+        <select
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          name="seater"
+          required
+          disabled={disabled}
+        >
+          <option value="">Select Seater *</option>
+          <option value="1">1 Seater (Single)</option>
+          <option value="2">2 Seater (Double Sharing)</option>
+          <option value="3">3 Seater (Triple Sharing)</option>
+          <option value="4">4 Seater (Four Sharing)</option>
+          <option value="5">5 Seater (Five Sharing)</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <input
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           name="currentRoom"

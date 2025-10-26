@@ -13,6 +13,8 @@ interface RequestCardClientProps {
     desiredFloor?: string | null;
     currentRoom?: string | null;
     desiredRoom?: string | null;
+    roomType?: string;
+    seater?: number;
     message?: string | null;
     status: string;
     createdAt: string;
@@ -51,6 +53,20 @@ export function RequestCardClient({ item }: RequestCardClientProps) {
               {item.desiredFloor && ` ${item.desiredFloor}`}
               {item.desiredRoom && ` Room ${item.desiredRoom}`}
             </div>
+            {(item.roomType || item.seater) && (
+              <div className="mt-1 flex gap-2">
+                {item.roomType && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                    {item.roomType}
+                  </span>
+                )}
+                {item.seater && (
+                  <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded">
+                    {item.seater} Seater
+                  </span>
+                )}
+              </div>
+            )}
             {item.message && (
               <p className="mt-2 text-sm line-clamp-2">{item.message}</p>
             )}

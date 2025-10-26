@@ -84,6 +84,8 @@ model Request {
  desiredFloor  String?
  desiredRoom   String?
  message       String?
+ roomType      String   // AC or Non-AC
+ seater        Int      // 1, 2, 3, 4, or 5
  status        String   @default("open") // open, matched, closed
  createdAt     DateTime @default(now())
  updatedAt     DateTime @updatedAt

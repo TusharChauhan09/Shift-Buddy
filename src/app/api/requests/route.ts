@@ -115,6 +115,8 @@ export async function POST(req: Request) {
     let currentRoom: unknown;
     let desiredRoom: unknown;
     let message: unknown;
+    let roomType: unknown;
+    let seater: unknown;
 
     if (contentType.includes("application/json")) {
       const body = await req.json();
@@ -128,6 +130,8 @@ export async function POST(req: Request) {
         currentRoom,
         desiredRoom,
         message,
+        roomType,
+        seater,
       } = body || {});
     } else {
       const form = await req.formData();
@@ -140,12 +144,22 @@ export async function POST(req: Request) {
       currentRoom = form.get("currentRoom");
       desiredRoom = form.get("desiredRoom");
       message = form.get("message");
+      roomType = form.get("roomType");
+      seater = form.get("seater");
     }
 
     // Basic validation
     if (!currentHostel || !desiredHostel) {
       return NextResponse.json(
         { ok: false, error: "currentHostel and desiredHostel are required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate new required fields
+    if (!roomType || !seater) {
+      return NextResponse.json(
+        { ok: false, error: "Room type and seater are required" },
         { status: 400 }
       );
     }
@@ -157,6 +171,8 @@ export async function POST(req: Request) {
       currentRoom: currentRoom ? String(currentRoom).trim() : null,
       desiredRoom: desiredRoom ? String(desiredRoom).trim() : null,
       message: message ? String(message).trim() : null,
+      roomType: String(roomType).trim(),
+      seater: parseInt(String(seater)),
     };
 
     // Try to add new fields, but catch if they don't exist in Prisma Client yet
