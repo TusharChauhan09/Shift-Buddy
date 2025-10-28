@@ -21,8 +21,13 @@ export const metadata: Metadata = {
   title: "Shift-Buddy",
   description: "Your mutual shift guide for hostel room swaps and exchanges",
   icons: {
-    icon: "/shift.png",
-    apple: "/shift.png",
+    icon: [
+      { url: "/shift.png" },
+      { url: "/shift.png", sizes: "32x32", type: "image/png" },
+      { url: "/shift.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/shift.png", sizes: "180x180", type: "image/png" }],
+    shortcut: [{ url: "/shift.png" }],
   },
   openGraph: {
     title: "Shift-Buddy",
