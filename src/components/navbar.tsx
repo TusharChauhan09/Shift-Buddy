@@ -23,39 +23,42 @@ export function Navbar({
 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 bg-card text-card-foreground shadow-sm mt-2 mx-2 sm:mx-4 lg:mx-auto lg:max-w-6xl border rounded-lg backdrop-blur supports-[backdrop-filter]:bg-card/95">
-      <div className="px-2 sm:px-4 md:px-5 lg:px-6">
-        <div className="flex justify-between items-center h-14 sm:h-16 gap-1 sm:gap-2">
-          <div className="flex-shrink-0 min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-3">
+      <div className="px-3 sm:px-4 md:px-5 lg:px-6">
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          <div className="flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Image
                 src="/shift.png"
                 alt="Shift Buddy Logo"
                 width={32}
                 height={32}
-                className="w-7 h-7 sm:w-10 sm:h-10 object-contain flex-shrink-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               />
-              <div className="flex flex-col min-w-0">
-                <h1 className="text-sm sm:text-lg md:text-xl font-semibold leading-tight truncate">
-                  Shift Buddy
+              <div className="flex flex-col">
+                <h1 className="text-base sm:text-lg md:text-xl font-semibold leading-tight">
+                  <span className="hidden sm:inline">Shift Buddy</span>
+                  <span className="sm:hidden">Shift Buddy</span>
                 </h1>
-                <p className="text-[9px] sm:text-xs text-muted-foreground leading-tight hidden xs:block">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
                   your mutual shift guide
                 </p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {isAdmin && (
               <Link
                 href="/dashboard"
-                className="text-[10px] sm:text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors px-2 sm:px-4 py-1.5 sm:py-2 rounded-md shadow-sm cursor-pointer whitespace-nowrap"
+                className="text-xs sm:text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors px-3 sm:px-4 py-2 rounded-md shadow-sm cursor-pointer"
               >
-                <span className="hidden sm:inline">Dashboard</span>
-                <span className="sm:hidden">Admin</span>
+                Dashboard
               </Link>
             )}
-            <span className="text-[10px] sm:text-xs text-muted-foreground font-semibold hidden lg:inline max-w-[100px] truncate">
+            <span className="text-xs sm:text-sm text-muted-foreground font-semibold hidden md:inline">
               Welcome, {userName || "User"}
+            </span>
+            <span className="text-xs text-muted-foreground font-semibold md:hidden">
+              {userName?.split(" ")[0] || "User"}
             </span>
             <NotificationBell />
             <ThemeToggle />
