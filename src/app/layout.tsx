@@ -18,11 +18,13 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://shift-buddy-red.vercel.app'),
   title: "Shift-Buddy",
   description: "Your mutual shift guide for hostel room swaps and exchanges",
   icons: {
     icon: [
-      { url: "/shift.png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/shift.png", type: "image/png" },
       { url: "/shift.png", sizes: "32x32", type: "image/png" },
       { url: "/shift.png", sizes: "16x16", type: "image/png" },
     ],
