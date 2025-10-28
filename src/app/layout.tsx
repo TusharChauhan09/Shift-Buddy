@@ -18,7 +18,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://shift-buddy-red.vercel.app'),
+  metadataBase: new URL("https://shift-buddy-red.vercel.app"),
   title: "Shift-Buddy",
   description: "Your mutual shift guide for hostel room swaps and exchanges",
   icons: {
