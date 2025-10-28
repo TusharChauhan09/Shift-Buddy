@@ -11,14 +11,16 @@ interface FilteredRequestsProps {
 export function FilteredRequests({ items }: FilteredRequestsProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [filterMode, setFilterMode] = useState<"from" | "to">("from");
-  const [hostelType, setHostelType] = useState<"BH" | "GH" | null>(null);
+  const [hostelType, setHostelType] = useState<"BH" | "GH" | "BA" | null>(null);
   const [hostelNumber, setHostelNumber] = useState<string | null>(null);
   const [selectedFloor, setSelectedFloor] = useState("All Floors");
   const [selectedRoomType, setSelectedRoomType] = useState<string>("All");
   const [selectedSeater, setSelectedSeater] = useState<string>("All");
 
   const selectedHostel = useMemo(() => {
-    if (!hostelType || !hostelNumber) return "All Hostels";
+    if (!hostelType) return "All Hostels";
+    if (hostelType === "BA") return "BA"; // Boys Apartment doesn't have numbers
+    if (!hostelNumber) return "All Hostels";
     return `${hostelType}-${hostelNumber}`;
   }, [hostelType, hostelNumber]);
 
@@ -82,7 +84,7 @@ export function FilteredRequests({ items }: FilteredRequestsProps) {
     setSelectedSeater("All");
   };
 
-  const handleHostelTypeClick = (type: "BH" | "GH") => {
+  const handleHostelTypeClick = (type: "BH" | "GH" | "BA") => {
     if (hostelType === type) {
       setHostelType(null);
       setHostelNumber(null);
@@ -218,7 +220,15 @@ export function FilteredRequests({ items }: FilteredRequestsProps) {
               >
                 GH
               </Button>
-              {hostelType && (
+              <Button
+                size="sm"
+                variant={hostelType === "BA" ? "default" : "outline"}
+                onClick={() => handleHostelTypeClick("BA")}
+                className="h-8 px-3 text-xs"
+              >
+                BA
+              </Button>
+              {hostelType && hostelType !== "BA" && (
                 <>
                   <div className="w-px bg-border self-stretch mx-1" />
                   {[...Array(10)].map((_, i) => {

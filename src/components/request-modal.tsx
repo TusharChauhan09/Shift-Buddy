@@ -21,7 +21,7 @@ export function RequestModal({
   const [error, setError] = useState<string | null>(null);
   const [currentHostel, setCurrentHostel] = useState("");
   const [desiredHostel, setDesiredHostel] = useState("");
-  const [hostelType, setHostelType] = useState<"BH" | "GH" | null>(null);
+  const [hostelType, setHostelType] = useState<"BH" | "GH" | "BA" | null>(null);
   const [currentHostelNumber, setCurrentHostelNumber] = useState<string | null>(
     null
   );
@@ -32,7 +32,10 @@ export function RequestModal({
 
   // Update currentHostel when type and number are selected
   useEffect(() => {
-    if (hostelType && currentHostelNumber) {
+    if (hostelType === "BA") {
+      // Boys Apartment doesn't have numbers
+      setCurrentHostel("BA");
+    } else if (hostelType && currentHostelNumber) {
       setCurrentHostel(`${hostelType}-${currentHostelNumber}`);
     } else {
       setCurrentHostel("");
@@ -41,7 +44,10 @@ export function RequestModal({
 
   // Update desiredHostel when type and number are selected
   useEffect(() => {
-    if (hostelType && desiredHostelNumber) {
+    if (hostelType === "BA") {
+      // Boys Apartment doesn't have numbers
+      setDesiredHostel("BA");
+    } else if (hostelType && desiredHostelNumber) {
       setDesiredHostel(`${hostelType}-${desiredHostelNumber}`);
     } else {
       setDesiredHostel("");
@@ -207,7 +213,7 @@ export function RequestModal({
             </div>
           )}
 
-          {/* Hostel Type Selection - BH or GH */}
+          {/* Hostel Type Selection - BH, GH, or BA */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
               Hostel Type <span className="text-destructive">*</span>
@@ -239,29 +245,53 @@ export function RequestModal({
               >
                 Girls Hostel (GH)
               </Button>
+              <Button
+                type="button"
+                variant={hostelType === "BA" ? "default" : "outline"}
+                onClick={() => {
+                  setHostelType(hostelType === "BA" ? null : "BA");
+                  setCurrentHostelNumber(null);
+                  setDesiredHostelNumber(null);
+                }}
+                disabled={needsProfileCompletion || loading}
+                className="flex-1 h-10"
+              >
+                Boys Apartment
+              </Button>
             </div>
           </div>
 
           {/* AC/Non-AC and Seater Selection */}
           {hostelType && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="roomType" className="text-sm font-medium">
-                  Room Type <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="roomType"
-                  name="roomType"
-                  required
-                  disabled={needsProfileCompletion || loading}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="">Select Room Type</option>
-                  <option value="AC">AC</option>
-                  <option value="Non-AC">Non-AC</option>
-                </select>
-              </div>
-              <div className="space-y-2">
+              {/* Show Room Type only for BH and GH, not for BA */}
+              {hostelType !== "BA" && (
+                <div className="space-y-2">
+                  <label htmlFor="roomType" className="text-sm font-medium">
+                    Room Type <span className="text-destructive">*</span>
+                  </label>
+                  <select
+                    id="roomType"
+                    name="roomType"
+                    required
+                    disabled={needsProfileCompletion || loading}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">Select Room Type</option>
+                    <option value="AC">AC</option>
+                    <option value="Non-AC">Non-AC</option>
+                  </select>
+                </div>
+              )}
+              {/* Hidden input for BA - all rooms are AC */}
+              {hostelType === "BA" && (
+                <input type="hidden" name="roomType" value="AC" />
+              )}
+              <div
+                className={`space-y-2 ${
+                  hostelType === "BA" ? "md:col-span-2" : ""
+                }`}
+              >
                 <label htmlFor="seater" className="text-sm font-medium">
                   Seater <span className="text-destructive">*</span>
                 </label>
@@ -284,7 +314,7 @@ export function RequestModal({
           )}
 
           {/* Show hostel number selection only after type is selected */}
-          {hostelType && (
+          {hostelType && hostelType !== "BA" && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Current Hostel Number */}
@@ -386,9 +416,26 @@ export function RequestModal({
             </>
           )}
 
+          {/* For Boys Apartment - no hostel numbers needed */}
+          {hostelType === "BA" && (
+            <>
+              <div className="text-sm text-muted-foreground text-center py-3 bg-primary/10 border border-primary/20 rounded-md">
+                <p className="font-medium text-foreground">
+                  Boys Apartment Selected
+                </p>
+                <p className="text-xs mt-1">
+                  All rooms in Boys Apartment are AC. No hostel numbers
+                  required.
+                </p>
+              </div>
+              <input type="hidden" name="currentHostel" value="BA" required />
+              <input type="hidden" name="desiredHostel" value="BA" required />
+            </>
+          )}
+
           {!hostelType && (
             <div className="text-sm text-muted-foreground text-center py-4 bg-secondary/50 rounded-md">
-              Please select a hostel type (BH or GH) to continue
+              Please select a hostel type (BH, GH, or BA) to continue
             </div>
           )}
 
