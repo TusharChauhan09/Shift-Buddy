@@ -56,7 +56,17 @@ export function RequestModal({
       } else {
         setDesiredHostel("");
       }
+    } else if (hostelType === "BH") {
+      // For BH users, check desired type
+      if (desiredHostelType === "BA") {
+        setDesiredHostel("BA");
+      } else if (desiredHostelNumber) {
+        setDesiredHostel(`BH-${desiredHostelNumber}`);
+      } else {
+        setDesiredHostel("");
+      }
     } else if (hostelType && desiredHostelNumber) {
+      // For GH users (girls can only swap with girls)
       setDesiredHostel(`${hostelType}-${desiredHostelNumber}`);
     } else {
       setDesiredHostel("");
@@ -372,40 +382,88 @@ export function RequestModal({
                   <label className="text-sm font-medium">
                     Desired Hostel <span className="text-destructive">*</span>
                   </label>
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {[...Array(10)].map((_, i) => {
-                        const num = (i + 1).toString();
-                        return (
-                          <Button
-                            key={num}
-                            type="button"
-                            size="sm"
-                            variant={
-                              desiredHostelNumber === num
-                                ? "default"
-                                : "outline"
-                            }
-                            onClick={() => setDesiredHostelNumber(num)}
-                            disabled={needsProfileCompletion || loading}
-                            className="h-9 p-0"
-                          >
-                            {num}
-                          </Button>
-                        );
-                      })}
-                    </div>
 
-                    {/* Display selected hostel */}
-                    {desiredHostel && (
-                      <div className="text-sm text-muted-foreground bg-secondary px-3 py-2 rounded-md">
-                        Selected:{" "}
-                        <span className="font-medium text-foreground">
-                          {desiredHostel}
-                        </span>
-                      </div>
-                    )}
+                  {/* Option to select BA for BH users */}
+                  <div className="flex gap-2 mb-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={
+                        desiredHostelType === "BH" ? "default" : "outline"
+                      }
+                      onClick={() => {
+                        setDesiredHostelType("BH");
+                        setDesiredHostelNumber(null);
+                      }}
+                      disabled={needsProfileCompletion || loading}
+                      className="flex-1 h-8 text-xs"
+                    >
+                      Boys Hostel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={
+                        desiredHostelType === "BA" ? "default" : "outline"
+                      }
+                      onClick={() => {
+                        setDesiredHostelType("BA");
+                        setDesiredHostelNumber(null);
+                      }}
+                      disabled={needsProfileCompletion || loading}
+                      className="flex-1 h-8 text-xs"
+                    >
+                      Boys Apartment
+                    </Button>
                   </div>
+
+                  {/* Show BH number grid only if BH is selected or no type is selected yet */}
+                  {(!desiredHostelType || desiredHostelType === "BH") && (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {[...Array(10)].map((_, i) => {
+                          const num = (i + 1).toString();
+                          return (
+                            <Button
+                              key={num}
+                              type="button"
+                              size="sm"
+                              variant={
+                                desiredHostelNumber === num
+                                  ? "default"
+                                  : "outline"
+                              }
+                              onClick={() => {
+                                setDesiredHostelType("BH");
+                                setDesiredHostelNumber(num);
+                              }}
+                              disabled={needsProfileCompletion || loading}
+                              className="h-9 p-0"
+                            >
+                              {num}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show BA message when selected */}
+                  {desiredHostelType === "BA" && (
+                    <div className="text-xs text-muted-foreground bg-primary/10 border border-primary/20 rounded-md px-3 py-2">
+                      Boys Apartment selected
+                    </div>
+                  )}
+
+                  {/* Display selected hostel */}
+                  {desiredHostel && (
+                    <div className="text-sm text-muted-foreground bg-secondary px-3 py-2 rounded-md">
+                      Selected:{" "}
+                      <span className="font-medium text-foreground">
+                        {desiredHostel}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
