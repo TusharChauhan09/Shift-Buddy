@@ -22,6 +22,9 @@ export function RequestModal({
   const [currentHostel, setCurrentHostel] = useState("");
   const [desiredHostel, setDesiredHostel] = useState("");
   const [hostelType, setHostelType] = useState<"BH" | "GH" | "BA" | null>(null);
+  const [desiredHostelType, setDesiredHostelType] = useState<
+    "BH" | "BA" | null
+  >(null); // For BA users to select desired type
   const [currentHostelNumber, setCurrentHostelNumber] = useState<string | null>(
     null
   );
@@ -45,14 +48,20 @@ export function RequestModal({
   // Update desiredHostel when type and number are selected
   useEffect(() => {
     if (hostelType === "BA") {
-      // Boys Apartment doesn't have numbers
-      setDesiredHostel("BA");
+      // For BA users, check desired type
+      if (desiredHostelType === "BA") {
+        setDesiredHostel("BA");
+      } else if (desiredHostelType === "BH" && desiredHostelNumber) {
+        setDesiredHostel(`BH-${desiredHostelNumber}`);
+      } else {
+        setDesiredHostel("");
+      }
     } else if (hostelType && desiredHostelNumber) {
       setDesiredHostel(`${hostelType}-${desiredHostelNumber}`);
     } else {
       setDesiredHostel("");
     }
-  }, [hostelType, desiredHostelNumber]);
+  }, [hostelType, desiredHostelType, desiredHostelNumber]);
 
   // Generate default message based on hostels
   const defaultMessage =
@@ -416,7 +425,7 @@ export function RequestModal({
             </>
           )}
 
-          {/* For Boys Apartment - no hostel numbers needed */}
+          {/* For Boys Apartment - allow selection of desired hostel type */}
           {hostelType === "BA" && (
             <>
               <div className="text-sm text-muted-foreground text-center py-3 bg-primary/10 border border-primary/20 rounded-md">
@@ -424,12 +433,95 @@ export function RequestModal({
                   Boys Apartment Selected
                 </p>
                 <p className="text-xs mt-1">
-                  All rooms in Boys Apartment are AC. No hostel numbers
-                  required.
+                  All rooms in Boys Apartment are AC.
                 </p>
               </div>
               <input type="hidden" name="currentHostel" value="BA" required />
-              <input type="hidden" name="desiredHostel" value="BA" required />
+
+              {/* Desired Hostel Type Selection for BA users */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Desired Hostel <span className="text-destructive">*</span>
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    type="button"
+                    variant={desiredHostelType === "BH" ? "default" : "outline"}
+                    onClick={() => {
+                      setDesiredHostelType(
+                        desiredHostelType === "BH" ? null : "BH"
+                      );
+                      setDesiredHostelNumber(null);
+                    }}
+                    disabled={needsProfileCompletion || loading}
+                    className="flex-1 h-10"
+                  >
+                    Boys Hostel (BH)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={desiredHostelType === "BA" ? "default" : "outline"}
+                    onClick={() => {
+                      setDesiredHostelType(
+                        desiredHostelType === "BA" ? null : "BA"
+                      );
+                      setDesiredHostelNumber(null);
+                    }}
+                    disabled={needsProfileCompletion || loading}
+                    className="flex-1 h-10"
+                  >
+                    Boys Apartment (BA)
+                  </Button>
+                </div>
+
+                {/* Show BH number selection if BH is selected */}
+                {desiredHostelType === "BH" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Select BH Number
+                    </label>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {[...Array(10)].map((_, i) => {
+                        const num = (i + 1).toString();
+                        return (
+                          <Button
+                            key={num}
+                            type="button"
+                            size="sm"
+                            variant={
+                              desiredHostelNumber === num
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setDesiredHostelNumber(num)}
+                            disabled={needsProfileCompletion || loading}
+                            className="h-9 p-0"
+                          >
+                            {num}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Display selected desired hostel */}
+                {desiredHostel && (
+                  <div className="text-sm text-muted-foreground bg-secondary px-3 py-2 rounded-md">
+                    Selected:{" "}
+                    <span className="font-medium text-foreground">
+                      {desiredHostel}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <input
+                type="hidden"
+                name="desiredHostel"
+                value={desiredHostel}
+                required
+              />
             </>
           )}
 
