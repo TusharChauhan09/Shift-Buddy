@@ -2,6 +2,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 
 interface NavbarProps {
   userName?: string | null;
@@ -59,6 +60,7 @@ export function Navbar({
             <span className="text-xs text-muted-foreground font-semibold md:hidden">
               {userName?.split(" ")[0] || "User"}
             </span>
+            <NotificationBell />
             <ThemeToggle />
             <ProfileDropdown
               user={{ name: userName, image: userImage, email: userEmail }}

@@ -34,6 +34,7 @@ export function RequestDetailsModal({
 }: RequestDetailsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isInterested, setIsInterested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset interested state when modal opens/closes or request changes
   useEffect(() => {
@@ -41,6 +42,28 @@ export function RequestDetailsModal({
       setIsInterested(false);
     }
   }, [isOpen, request]);
+
+  // Handle interest button click
+  const handleInterestClick = async () => {
+    if (!request) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/requests/${request.id}/interest`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        setIsInterested(true);
+      } else {
+        console.error("Failed to record interest");
+      }
+    } catch (error) {
+      console.error("Error recording interest:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Close modal on Escape key
   useEffect(() => {
@@ -130,7 +153,7 @@ export function RequestDetailsModal({
               </svg>
               Student Information
             </h3>
-            <div 
+            <div
               className={`space-y-2 transition-all duration-500 ease-in-out ${
                 isInterested ? "blur-none" : "blur-sm select-none"
               }`}
@@ -160,33 +183,43 @@ export function RequestDetailsModal({
                 </span>
               </div>
             </div>
-            
+
             {/* Interested Button */}
             {!isInterested && (
               <div className="mt-4 pt-4 border-t border-border">
                 <Button
-                  onClick={() => setIsInterested(true)}
+                  onClick={handleInterestClick}
                   className="w-full"
                   variant="default"
+                  disabled={isSubmitting}
                 >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  I'm Interested - Show Contact Info
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Recording interest...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      I'm Interested - Show Contact Info
+                    </>
+                  )}
                 </Button>
               </div>
             )}
-            
+
             {isInterested && (
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-center">

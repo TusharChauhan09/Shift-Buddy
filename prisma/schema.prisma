@@ -29,6 +29,8 @@ model User {
   sessions           Session[]
   requests           Request[]
   feedbacks          Feedback[]
+  notifications      Notification[]
+  interests          Interest[]
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -91,6 +93,34 @@ model Request {
  updatedAt     DateTime @updatedAt
 
  @@index([status, createdAt])
+}
+
+// Interest tracking model - tracks when users show interest in requests
+model Interest {
+  id          String   @id @default(cuid())
+  userId      String   // Person who showed interest
+  requestId   String   // Request they're interested in
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, requestId]) // Prevent duplicate interests
+  @@index([requestId, createdAt])
+}
+
+// Notification model
+model Notification {
+  id            String   @id @default(cuid())
+  userId        String   // Owner of the request who receives the notification
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String   // "interest" for now, can add more types later
+  message       String   // "John Doe showed interest in your request"
+  requestId     String?  // Related request ID
+  interestedBy  String?  // User ID of person who showed interest
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, isRead, createdAt])
 }
 
 // Feedback model
