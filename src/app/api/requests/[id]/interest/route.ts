@@ -62,7 +62,9 @@ export async function POST(
       data: {
         userId: request.userId,
         type: "interest",
-        message: `${session.user.name || "Someone"} showed interest in your request`,
+        message: `${
+          session.user.name || "Someone"
+        } showed interest in your request`,
         requestId: requestId,
         interestedBy: session.user.id,
       },
