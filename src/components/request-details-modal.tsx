@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface RequestDetailsModalProps {
@@ -33,6 +33,14 @@ export function RequestDetailsModal({
   request,
 }: RequestDetailsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isInterested, setIsInterested] = useState(false);
+
+  // Reset interested state when modal opens/closes or request changes
+  useEffect(() => {
+    if (!isOpen || !request) {
+      setIsInterested(false);
+    }
+  }, [isOpen, request]);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -122,7 +130,11 @@ export function RequestDetailsModal({
               </svg>
               Student Information
             </h3>
-            <div className="space-y-2">
+            <div 
+              className={`space-y-2 transition-all duration-500 ease-in-out ${
+                isInterested ? "blur-none" : "blur-sm select-none"
+              }`}
+            >
               <div className="flex items-start">
                 <span className="text-sm font-medium text-muted-foreground w-32">
                   Name:
@@ -148,6 +160,42 @@ export function RequestDetailsModal({
                 </span>
               </div>
             </div>
+            
+            {/* Interested Button */}
+            {!isInterested && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <Button
+                  onClick={() => setIsInterested(true)}
+                  className="w-full"
+                  variant="default"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  I'm Interested - Show Contact Info
+                </Button>
+              </div>
+            )}
+            
+            {isInterested && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-center">
+                  <p className="text-sm text-primary font-medium">
+                    ✓ Contact information is now visible
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Hostel Information */}
